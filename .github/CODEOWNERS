@@ -1,0 +1,4 @@
+# Changes to automation need a review from the platform team.
+/.github/    @your-org/platform
+/infra/      @your-org/platform
+/deploy/     @your-org/platform

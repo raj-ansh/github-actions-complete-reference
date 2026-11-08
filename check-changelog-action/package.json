@@ -1,0 +1,17 @@
+{
+  "name": "check-changelog-action",
+  "version": "1.0.0",
+  "description": "Fail a workflow when the changelog has no entry for a version.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "build": "esbuild src/index.js --bundle --platform=node --target=node24 --format=esm --banner:js=\"import{createRequire}from'module';const require=createRequire(import.meta.url);\" --outfile=dist/index.mjs"
+  },
+  "dependencies": {
+    "@actions/core": "^3.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.0"
+  }
+}

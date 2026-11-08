@@ -1,0 +1,53 @@
+name: Deploy to an environment
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: GitHub environment to deploy to
+        required: true
+        type: string
+      image:
+        description: Image reference, including its digest
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ vars.APP_URL }}
+    concurrency:
+      group: deploy-${{ inputs.environment }}
+      cancel-in-progress: false
+    steps:
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - uses: azure/setup-kubectl@bda439f5f36b99b262ebdcd3613869bddb064c8e # v5.2.0
+      - name: Roll out the new image
+        env:
+          CLUSTER: ${{ vars.EKS_CLUSTER }}
+          NAMESPACE: ${{ vars.K8S_NAMESPACE }}
+          REGION: ${{ vars.AWS_REGION }}
+          IMAGE: ${{ inputs.image }}
+        run: |
+          aws eks update-kubeconfig --name "$CLUSTER" --region "$REGION"
+          kubectl -n "$NAMESPACE" set image \
+            deployment/shelfwise "shelfwise=$IMAGE"
+          if ! kubectl -n "$NAMESPACE" rollout status \
+            deployment/shelfwise --timeout=180s; then
+            kubectl -n "$NAMESPACE" rollout undo deployment/shelfwise
+            exit 1
+          fi
+      - name: Check the live service
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+        run: curl --fail --silent --retry 5 --retry-all-errors "$APP_URL/health"

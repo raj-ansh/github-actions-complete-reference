@@ -1,0 +1,16 @@
+name: Check changelog
+description: Fail when the changelog has no entry for a version.
+inputs:
+  version:
+    description: The version to look for, such as 1.2.0 or v1.2.0
+    required: true
+  file:
+    description: Path to the changelog
+    required: false
+    default: CHANGELOG.md
+outputs:
+  heading:
+    description: The heading that matched
+runs:
+  using: node24
+  main: dist/index.mjs
