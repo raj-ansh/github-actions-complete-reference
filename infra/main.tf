@@ -44,12 +44,20 @@ resource "aws_s3_bucket_public_access_block" "backups" {
   restrict_public_buckets = true
 }
 
+resource "aws_kms_key" "backups" {
+  description             = "Encrypts ShelfWise backups"
+  enable_key_rotation     = true
+  deletion_window_in_days = 30
+}
+
 resource "aws_s3_bucket_server_side_encryption_configuration" "backups" {
   bucket = aws_s3_bucket.backups.id
 
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = "aws:kms"
+      sse_algorithm     = "aws:kms"
+      kms_master_key_id = aws_kms_key.backups.arn
     }
+    bucket_key_enabled = true
   }
 }
