@@ -1,0 +1,14 @@
+# Findings reviewed and accepted. Each entry needs a reason and an owner.
+# Review this file whenever the project's risk changes.
+
+# Manifests are applied with `kubectl -n <namespace>`, so the namespace is
+# chosen at deploy time and is never `default`.
+KSV-0110
+
+# Allowed registries are enforced by the cluster's admission policy,
+# not by each manifest.
+KSV-0125
+
+# Access logging needs a second bucket. Accepted for this small project;
+# revisit if the backups ever hold personal data.
+AWS-0089
